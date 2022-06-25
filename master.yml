@@ -1,0 +1,54 @@
+# configure the master node and initialize the cluster
+#  initialize the cluster and install Flannel:
+#   - By running the first Kubeadm task "init" the cluster is initialized,
+#     passing the argument --pod-network-cidr = 172.16.0.0 / 16
+#     and therefore specifying the private subnet from which the pod IPs will be assigned.
+#     Flannel uses the old subnet by default - Kubeadm is told to use the same subnet.
+#   - With the second task the creation of a .kubernet directory in / home / kube is initialized,
+#     and it will contain all the configuration
+#     information, such as the admin key files, needed to connect to the cluster, and the cluster API address.
+#   - With the third task the /etc/kubernetes/admin.conf file generated
+#     by kubeadm init to the non-root user's home directory will be copied.
+#     This will allow you to use kubectl to access the newly created cluster.
+#   - With the fourth task, you are running Kubectl apply to install Flannel.
+#     kubectl apply -f descriptor. [yml | json] is the syntax for telling Kubectl to create the objects described in the descriptor file. [yml | json].
+#     The kube-flannel.yml file contains descriptions of the objects needed to configure Flannel in the cluster.
+
+---
+- hosts: master
+  become: yes
+
+  tasks:
+  - name: remove swap (Master and worker nodes work the same)
+    shell: "swapoff -a"
+  
+  - name: initialize the cluster
+    shell: kubeadm init --pod-network-cidr=172.16.0.0/16 >> cluster_initialized.txt
+    args:
+      chdir: $HOME
+      creates: cluster_initialized.txt
+  
+  - name: create .kubernet directory
+    become: yes
+    become_user: kube
+    become_method: sudo
+    become_ask_pass: no
+    file:
+      path: $HOME/.kubernet
+      state: directory
+      mode: 0755
+  
+  - name: copy admin.conf to user's kube config
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /home/kube/.kubernet/config
+      remote_src: yes
+      owner: kube
+  
+  - name: install Pod network
+    become: yes
+    become_user: kube
+    shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+    args:
+      chdir: $HOME
+      creates: pod_network_setup.txt

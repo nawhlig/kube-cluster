@@ -1,0 +1,59 @@
+# ansible install these packages on your servers (Debian-Ubuntu 20.04)
+# The newly pasted playbook has the task of:
+#  - Installing Docker, the container runtime;
+#  - Installing apt-transport-https, allowing you to add external HTTPS sources to the APT source list;
+#  - Adding the apt key of the Kubernetes APT repository for key verification;
+#  - Adding the Kubernetes APT repository to the remote server APT sources list;
+#  - Installing Kubelet and Kubeadm.
+#  - Installing Kubectl (Optionally determine the installation according to the location where it will be installed)
+
+---
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: INSTALL DOCKER
+      apt:
+        name: docker.io
+        state: present
+        update_cache: true
+    
+    - name: INSTALL APT Transport HTTPS
+      apt:
+        name: apt-transport-https
+        state: present
+    
+    - name: ADD Kubernetes apt-key (google cloud public signing key)
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+    
+    - name: ADD Kubernetes' APT repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: 'kubernetes'
+    
+    - name: INSTALL kubelet
+      apt:
+        name: kubelet
+        state: present
+        update_cache: true
+    
+    - name: INSTALL kubeadm
+      apt:
+        name: kubeadm
+        state: present
+
+- hosts: master
+  become: yes
+  tasks:
+  - name: INSTALL kubectl
+    apt:
+      name: kubectl
+      state: present
+  
+  - name: INSTALL acl
+    apt:
+      name: acl
+      state: present
