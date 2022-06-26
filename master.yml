@@ -19,8 +19,10 @@
   become: yes
 
   tasks:
-    - name: remove swap (Master and worker nodes work the same)
+    - name: remove swap [swapoff -a] (Master and worker nodes work the same)
       shell: "swapoff -a"
+    - name: remove swap fstab (Master and worker nodes work the same)
+      shell: sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
   
     - name: initialize the cluster
       shell: kubeadm init --pod-network-cidr=172.16.0.0/16 >> cluster_initialized.txt
@@ -38,7 +40,7 @@
         state: directory
         mode: 0755
 
-    - name: copy admin.conf to user's kube config
+    - name: copy admin.conf to users kube config
       copy:
         src: /etc/kubernetes/admin.conf
         dest: /home/ubuntu/.kube/config
