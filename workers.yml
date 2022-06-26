@@ -30,8 +30,8 @@
     - name: remove swap fstab (Master and worker nodes work the same)
       shell: sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
-  - name: join cluster	
-    shell: "{{ hostvars['master'].join_command }} >> node_joined.txt"
-    args:
-      chdir: $HOME
-      creates: node_joined.txt
+    - name: join cluster	
+      shell: "{{ hostvars['master'].join_command }} >> node_joined.txt"
+      args:
+        chdir: $HOME
+        creates: node_joined.txt
