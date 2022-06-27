@@ -1,7 +1,7 @@
 #ansible access account authorized
 
 ---
-- hosts: all
+- hosts:  CIserver
   become: yes
 
   tasks:
@@ -13,13 +13,19 @@
         createhome: yes
         shell: /bin/bash
 
-    - name: allow 'ubuntu' to have passwordless sudo
+    - name: password change the ubuntu user
+      user:
+        name: ubuntu
+        password: "{{ 'qwer1234' | password_hash('sha512') }}"
+        state: present
+
+    - name: allow ubuntu user to have passwordless sudo
       lineinfile:
         dest: /etc/sudoers
-        line: 'ubuntu ALL=(ALL) NOPASSWD: ALL'
+        line: 'ubuntu ALL=(ALL:ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
 
-    - name: set up authorized keys for the kube user
+    - name: set up authorized keys for the ubuntu user
       authorized_key: user=ubuntu key="{{item}}"
       with_file:
       - ~/.ssh/id_rsa.pub
