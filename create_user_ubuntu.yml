@@ -1,7 +1,7 @@
 #ansible access account authorized
 
 ---
-- hosts:  CIserver
+- hosts:  all
   become: yes
 
   tasks:
