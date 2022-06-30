@@ -25,11 +25,6 @@
   become: yes
 
   tasks:
-    - name: remove swap [swapoff -a] (Master and worker nodes work the same)
-      shell: "swapoff -a"
-    - name: remove swap fstab (Master and worker nodes work the same)
-      shell: sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-
     - name: join cluster	
       shell: "{{ hostvars['master'].join_command }} >> node_joined.txt"
       args:
