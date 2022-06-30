@@ -19,6 +19,28 @@
     - name: remove swap fstab (Master and worker nodes work the same)
       shell: sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
     
+    - name: bridge network, iptable enable (Master and worker nodes work the same)
+      shell: cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf br_netfilter EOF
+    
+    - name: iptables config (Master and worker nodes work the same)
+      shell: cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+             net.bridge.bridge-nf-call-ip6tables = 1
+             net.bridge.bridge-nf-call-iptables = 1
+             EOF
+             sudo sysctl --system
+
+    - name: ufw daemon-state changes
+      become: yes
+      ansible.builtin.systemd:
+        name: ufw
+        state : stopped
+
+    - name: ufw daemon systmectl disable
+      become: yes
+      ansible.builtin.systemd:
+        name: ufw
+        enabled: no
+             
     - name: INSTALL DOCKER
       apt:
         name: docker.io
