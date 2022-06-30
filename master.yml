@@ -1,18 +1,29 @@
 # configure the master node and initialize the cluster
-#  initialize the cluster and install Flannel:
+#  initialize the cluster and install Calico:
 #   - By running the first Kubeadm task "init" the cluster is initialized,
 #     passing the argument --pod-network-cidr = 172.16.0.0 / 16 (naver cloud), kuberbetes default=10.244.0.0/16
-#     and therefore specifying the private subnet from which the pod IPs will be assigned.
-#     Flannel uses the old subnet by default - Kubeadm is told to use the same subnet.
+#
 #   - With the second task the creation of a .kube directory in / home / ubuntu is initialized,
 #     and it will contain all the configuration
 #     information, such as the admin key files, needed to connect to the cluster, and the cluster API address.
+#
 #   - With the third task the /etc/kubernetes/admin.conf file generated
 #     by kubeadm init to the non-root user's home directory will be copied.
 #     This will allow you to use kubectl to access the newly created cluster.
+
+# Note: if you prefer to use Flannel CNI plugin instead of Calico, it suffices to replace that part with:
 #   - With the fourth task, you are running Kubectl apply to install Flannel.
 #     kubectl apply -f descriptor. [yml | json] is the syntax for telling Kubectl to create the objects described in the descriptor file. [yml | json].
 #     The kube-flannel.yml file contains descriptions of the objects needed to configure Flannel in the cluster.
+#
+# replace calico CNI
+#    - name: install Pod network flannel CNI
+#      become: yes
+#      become_user: ubuntu
+#      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+#      args:
+#        chdir: $HOME
+#        creates: pod_network_setup.txt
 
 ---
 - hosts: master
@@ -54,10 +65,4 @@
         creates: pod_network_setup.txt
 
       
-#    - name: install Pod network flannel CNI
-#      become: yes
-#      become_user: ubuntu
-#      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
-#      args:
-#        chdir: $HOME
-#        creates: pod_network_setup.txt
+
