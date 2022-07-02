@@ -1,4 +1,4 @@
-# ssh The authenticity of host
+# ssh access The authenticity of host
 # Are you sure you want to continue connecting (yes/no)?
 # automation input 'yes'
 
@@ -10,8 +10,7 @@
   become: yes
 
   tasks:
-    - name: ssh-keygen ansible server
-      connection: local         #ansible 에서 ssh key 생성을 위해 local 에서 실행함. 
+    - name: input known_hosts using ssh-keyscan 
       command: "ssh-keygen -N '' -f ~/.ssh/id_rsa"
       igmore_errors: yes
       run_once: true
