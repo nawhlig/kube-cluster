@@ -11,38 +11,11 @@
 
   tasks:
     - name: input known_hosts using ssh-keyscan 
-      command: "ssh-keygen -N '' -f ~/.ssh/id_rsa"
-      igmore_errors: yes
-      run_once: true
-      
-    - name: import id_rsa.pub
-      connection: local
-      command: "cat /home/
-      user:
-        name: "{{ user_name }}"
-        password: "{{ user_password | password_hash('sha512') }}"
-        shell: /bin/bash
-        groups: "{{ user_name }}", admin
-        append: yes
-        createhome: yes
-        home: /home/"{{ user_name }}"
-        state: present
-        
-    - name: allow ubuntu user to have passwordless sudo
+      command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }}
+      register: keyscan #command로 확인된 node의 키 값을 변수 keyscan에 저장
       lineinfile:
-        dest: /etc/sudoers
-        line: "{{ user_name }}   ALL=(ALL:ALL) NOPASSWD: ALL"
-        validate: 'visudo -cf %s'
-        state: present
-
-    - name: set up authorized keys for the user
-      authorized_key: user="{{ user_name }}" key="{{item}}"
-      with_file:
-      - ~/.ssh/id_rsa.pub
-
-# 변수정의
-  vars:
-    user_name: ubuntu
-    user_password: qwer1234
-    
-     
+        dest: ~/.ssh/known_hosts
+        create: yes
+        line: {{ item }} #kryscan 변수에 있는 값이 stdout_lines으로 출력되면 known_hosts 파일에 한 줄씩 작성
+        with_file:
+        - "{{ keyscan.stdout_lines }}"
