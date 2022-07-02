@@ -1,31 +1,38 @@
-#ansible access account authorized
+#create account
 
 ---
 - hosts:  all
   become: yes
 
   tasks:
-    - name: create the 'ubuntu' user
+    - name: create group
+      group: "{{ user_name }}"
+      state: present
+      
+    - name: create the user/pw
       user:
-        name: ubuntu
-        append: yes
-        state: present
-        createhome: yes
+        name: "{{ user_name }}"
+        password: "{{ user_password | password_hash('sha512') }}"
         shell: /bin/bash
-
-    - name: password change the ubuntu user
-      user:
-        name: ubuntu
-        password: "{{ 'qwer1234' | password_hash('sha512') }}"
+        groups: "{{ user_name }}", admin
+        append: yes
+        createhome: yes
+        home: /home/"{{ user_name }}"
         state: present
-
+        
     - name: allow ubuntu user to have passwordless sudo
       lineinfile:
         dest: /etc/sudoers
-        line: 'ubuntu ALL=(ALL:ALL) NOPASSWD: ALL'
+        line: "{{ user_name }}   ALL=(ALL:ALL) NOPASSWD: ALL"
         validate: 'visudo -cf %s'
+        state: present
 
-    - name: set up authorized keys for the ubuntu user
-      authorized_key: user=ubuntu key="{{item}}"
-      with_file:
-      - ~/.ssh/id_rsa.pub
+#    - name: set up authorized keys for the user
+#      authorized_key: user="{{ user_name }}" key="{{item}}"
+#      with_file:
+#      - ~/.ssh/id_rsa.pub
+
+# 변수정의
+  vars:
+    user_name: ubuntu
+    user_password: qwer1234
