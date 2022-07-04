@@ -1,0 +1,58 @@
+#create account
+
+---
+- hosts:  all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: create group
+      ansible.builtin.group:
+        name: "{{ user_name }}"
+        state: present
+
+    - name: create the user/pw
+      user:
+        name: "{{ user_name }}"
+        password: "{{ user_password | password_hash('sha512') }}"
+        shell: /bin/bash
+        group: "{{ user_name }}"
+        groups: sudo
+        append: yes
+        createhome: yes
+        home: /home/{{ user_name }}
+        state: present
+
+    - name: allow ubuntu user to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        line: "{{ user_name }}   ALL=(ALL:ALL) NOPASSWD: ALL"
+        validate: 'visudo -cf %s'
+        state: present
+
+#------------------- ssh access The authenticity of host---------------------------------------------------------
+# ssh-keygen 
+    - name: ssh-keygen ansible-server
+      connection: local
+      command: "ssh-keygen -b 2048 -t rsa -f /home/{{ ansibel_server_username }}/.ssh/id_rsa -q -N ''"
+      ignore_errors: yes
+      run_once: true
+
+# ssh-copy-id
+    - name: import id_rsa.pub
+      connection: local
+      command: "cat /home/{{ ansibel_server_username }}/.ssh/id_rsa.pub"
+      register: id_pub
+      run_once: true
+
+    - name: add ansible-node authrized keys
+      lineinfile:
+        dest: /home/{{ user_name }}/.ssh/authorized_keys
+        line: "{{ id_pub.stdout }}"
+        create: yes
+
+# 변수정의
+  vars:
+    ansibel_server_username : an
+    user_name: ubuntu
+    user_password: qwer1234
