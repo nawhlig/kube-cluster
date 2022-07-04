@@ -31,7 +31,7 @@
       # If the number of node servers is less than 50, follow this guide
       become: yes
       become_user: ubuntu
-      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_network_setup.txt
+      shell: kubectl apply -f https://projectcalico.docs.tigera.io/manifests/calico.yaml >> pod_network_setup.txt
       args:
         chdir: $HOME
         creates: pod_network_setup.txt
