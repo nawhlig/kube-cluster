@@ -31,9 +31,14 @@
         state: present
 
 #------------------- ssh access The authenticity of host---------------------------------------------------------
+
+#keygen and copy-id (if ansibel_server_username root) : repalce code please
+#---- "ssh-keygen -b 2048 -t rsa -f /{{ ansibel_server_username }}/.ssh/id_rsa -q -N ''"
+#---- "cat /{{ ansibel_server_username }}/.ssh/id_rsa.pub"
+
 # ssh-keygen 
     - name: ssh-keygen ansible-server
-      becomeuser: "{{ user_name }}"
+      becomeuser: "{{ ansibel_server_username }}"
       connection: local
       command: "ssh-keygen -b 2048 -t rsa -f /home/{{ ansibel_server_username }}/.ssh/id_rsa -q -N ''"
       ignore_errors: yes
@@ -41,7 +46,7 @@
 
 # ssh-copy-id
     - name: import id_rsa.pub
-      becomeuser: "{{ user_name }}"
+      becomeuser: "{{ ansibel_server_username }}"
       connection: local
       command: "cat /home/{{ ansibel_server_username }}/.ssh/id_rsa.pub"
       register: id_pub
