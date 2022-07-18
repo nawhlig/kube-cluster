@@ -38,7 +38,7 @@
 
 # ssh-keygen 
     - name: ssh-keygen ansible-server
-      becomeuser: "{{ ansibel_server_username }}"
+      become_user: "{{ ansibel_server_username }}"
       connection: local
       command: "ssh-keygen -b 2048 -t rsa -f /home/{{ ansibel_server_username }}/.ssh/id_rsa -q -N ''"
       ignore_errors: yes
@@ -46,14 +46,14 @@
 
 # ssh-copy-id
     - name: import id_rsa.pub
-      becomeuser: "{{ ansibel_server_username }}"
+      become_user: "{{ ansibel_server_username }}"
       connection: local
       command: "cat /home/{{ ansibel_server_username }}/.ssh/id_rsa.pub"
       register: id_pub
       run_once: true
 
     - name: add ansible-node authrized keys
-      becomeuser: "{{ user_name }}"
+      become_user: "{{ user_name }}"
       lineinfile:
         dest: /home/{{ user_name }}/.ssh/authorized_keys
         line: "{{ id_pub.stdout }}"
