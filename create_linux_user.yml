@@ -1,0 +1,59 @@
+#create linux user account
+
+---
+- hosts: all
+
+# 변수정의
+  vars:
+    ansibel_server_username: prime
+    Management_target_add_new_user: ubuntu
+    Management_target_group: manager
+    user_password: Qlalfqjsgh210320!
+
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: create group
+      ansible.builtin.group:
+        name: "{{ Management_target_group }}"
+        state: present
+
+    - name: create the user/pw
+      ansible.builtin.user:
+        name: "{{ Management_target_add_new_user }}"
+        password: "{{ user_password | password_hash('sha512') }}"
+        shell: /bin/bash
+        group: "{{ Management_target_group }}"
+        append: yes
+        createhome: yes
+        home: /home/{{ Management_target_add_new_user }}
+        state: present
+
+    - name: allow add new user to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        line: "{{ Management_target_add_new_user }}   ALL=(ALL:ALL) NOPASSWD: ALL"
+        validate: 'visudo -cf %s'
+        state: present
+
+#------------------- ssh access The authenticity of host---------------------------------------------------------
+# ssh-keygen 
+    - name: ssh-keygen ansible-server
+      connection: local
+      command: "ssh-keygen -b 2048 -t rsa -f /home/{{ ansibel_server_username }}/.ssh/id_rsa -q -N ''"
+      ignore_errors: yes
+      run_once: true
+
+# ssh-copy-id
+    - name: import id_rsa.pub
+      connection: local
+      command: "cat /home/{{ ansibel_server_username }}/.ssh/id_rsa.pub"
+      register: id_pub
+      run_once: true
+
+    - name: add ansible-node authrized keys
+      lineinfile:
+        dest: /home/{{ Management_target_add_new_user }}/.ssh/authorized_keys
+        line: "{{ id_pub.stdout }}"
+        create: yes

@@ -19,7 +19,7 @@
 
     - name: create .kubernet directory
       become: yes
-      become_user: ubuntu
+#      become_user: ubuntu
       file:
         path: $HOME/.kube
         state: directory
@@ -28,16 +28,16 @@
     - name: copy admin.conf to users kube config
       copy:
         src: /etc/kubernetes/admin.conf
-        dest: /home/ubuntu/.kube/config
+        dest: $HOME/.kube/config
         remote_src: yes
-        owner: ubuntu
+#        owner: ubuntu
 
     - name: Install CALICO CNI kunernetes networking tool POD NETWORK
       # Follow this guide when the number of node servers exceeds 50
       # - https://docs.projectcalico.org/getting-started/kubernetes/self-managed-onprem/onpremises
       # If the number of node servers is less than 50, follow this guide
       become: yes
-      become_user: ubuntu
+#      become_user: ubuntu
       shell: kubectl apply -f https://projectcalico.docs.tigera.io/manifests/calico.yaml >> pod_network_setup.txt
       args:
         chdir: $HOME
