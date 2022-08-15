@@ -41,7 +41,7 @@
 # ssh-keygen 
     - name: ssh-keygen ansible-server
       connection: local
-      command: "ssh-keygen -b 2048 -t rsa -f /home/{{ ansibel_server_username }}/.ssh/id_rsa -q -N ''"
+      command: "ssh-keygen -q -t rsa -N '' -m PEM -t rsa -b 4096 -f /home/{{ ansibel_server_username }}/.ssh/id_rsa <<<y >dev/null 2>&1"
       ignore_errors: yes
       run_once: true
 
